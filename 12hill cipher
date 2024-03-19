@@ -1,0 +1,68 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <math.h>
+#define MOD 26
+void encryptHill(char *plaintext, int key[2][2], char *ciphertext) {
+    int len = strlen(plaintext);
+    int pairs = ceil(len / 2.0);
+
+    if (len % 2 != 0) {
+        strcat(plaintext, "X");
+        len++;
+    }
+
+    for (int i = 0; i < pairs; i++) {
+        
+        int first = plaintext[2 * i] - 'a';
+        int second = plaintext[2 * i + 1] - 'a';
+    
+        int encryptedFirst = (key[0][0] * first + key[0][1] * second) % MOD;
+        int encryptedSecond = (key[1][0] * first + key[1][1] * second) % MOD;
+
+        ciphertext[2 * i] = (char)(encryptedFirst + 'a');
+        ciphertext[2 * i + 1] = (char)(encryptedSecond + 'a');
+    }
+    ciphertext[len] = '\0'; 
+}
+
+int modInverse(int a, int m) {
+    a = a % m;
+    for (int x = 1; x < m; x++)
+        if ((a * x) % m == 1)
+            return x;
+    return 1;
+}
+
+void decryptHill(char *ciphertext, int key[2][2], char *plaintext) {
+    int len = strlen(ciphertext);
+
+    for (int i = 0; i < len; i += 2) {
+        
+        int first = ciphertext[i] - 'a';
+        int second = ciphertext[i + 1] - 'a';
+
+        int decryptedFirst = (key[1][1] * first - key[0][1] * second + MOD) % MOD;
+        int decryptedSecond = (-key[1][0] * first + key[0][0] * second + MOD) % MOD;
+
+        plaintext[i] = (char)(decryptedFirst + 'a');
+        plaintext[i + 1] = (char)(decryptedSecond + 'a');
+    }
+    plaintext[len] = '\0'; 
+}
+
+int main() {
+    char plaintext[] = "meetmeattheusualplaceattenratherthaneightoclock";
+    int key[2][2] = {{9, 4}, {5, 7}};
+    char ciphertext[1000];
+    char decryptedtext[1000];
+    
+    encryptHill(plaintext, key, ciphertext);
+    printf("Encrypted Text: %s\n", ciphertext);
+
+    decryptHill(ciphertext, key, decryptedtext);
+    printf("Decrypted Text: %s\n", decryptedtext);
+
+    return 0;
+}
