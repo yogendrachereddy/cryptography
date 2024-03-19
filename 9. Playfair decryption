@@ -1,0 +1,71 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#define GRID_SIZE 5
+void preprocess(char message[]) {
+    for (int i = 0, j = 0; message[i]; i++) {
+        if (message[i] != ' ') message[j++] = toupper(message[i]);
+    }
+}
+void initializeGrid(char key[], char grid[][GRID_SIZE]) {
+    int k = 0, alphabets[26] = {0};
+    for (int i = 0, j = 0; key[i]; i++) {
+        if (key[i] != 'J') alphabets[key[i] - 'A'] = 1;
+    }
+    for (int i = 0; i < 26; i++) {
+        if (i != ('J' - 'A') && alphabets[i] == 0) key[k++] = 'A' + i;
+    }
+    for (int i = 0, k = 0; i < GRID_SIZE; i++) {
+        for (int j = 0; j < GRID_SIZE; j++) grid[i][j] = key[k++];
+    }
+}
+int findPosition(char grid[][GRID_SIZE], char ch, int *row, int *col) {
+    if (ch == 'J') ch = 'I';
+    for (int i = 0; i < GRID_SIZE; i++) {
+        for (int j = 0; j < GRID_SIZE; j++) {
+            if (grid[i][j] == ch) {
+                *row = i; *col = j;
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+void decrypt(char grid[][GRID_SIZE], char message[]) {
+    int len = strlen(message);
+    for (int i = 0; i < len; i += 2) {
+        int row1, col1, row2, col2;
+        if (!findPosition(grid, message[i], &row1, &col1)) {
+            message[i] = 'X'; 
+        }
+        if (!findPosition(grid, message[i + 1], &row2, &col2)) {
+            message[i + 1] = 'X';
+        }
+        if (message[i] == message[i + 1]) {
+            message[i] = message[i + 1] = 'X';
+        } else if (row1 == row2) {
+            message[i] = grid[row1][(col1 - 1 + GRID_SIZE) % GRID_SIZE];
+            message[i + 1] = grid[row2][(col2 - 1 + GRID_SIZE) % GRID_SIZE];
+        } else if (col1 == col2) {
+            message[i] = grid[(row1 - 1 + GRID_SIZE) % GRID_SIZE][col1];
+            message[i + 1] = grid[(row2 - 1 + GRID_SIZE) % GRID_SIZE][col2];
+        } else {
+            message[i] = grid[row1][col2];
+            message[i + 1] = grid[row2][col1];
+        }
+    }
+}
+int main() {
+    char key[] = "PT109";
+    char message[] = "KXJEY UREBE ZWEHE WRYTU HEYFS KREHE GOYFI WTTTU OLKSY CAJPO BOTEI ZONTX BYBNT GONEY CUZWR GDSON SXBOU YWRHE BAAHY USEDQP";
+    preprocess(message);
+    if (strlen(message) % 2 != 0) {
+        printf("Invalid message length. Please provide a message with an even number of characters.\n");
+        return 1;
+    }
+    char grid[GRID_SIZE][GRID_SIZE];
+    initializeGrid(key, grid);
+    decrypt(grid, message);
+    printf("Decrypted message: %s\n", message);
+    return 0;
+}
