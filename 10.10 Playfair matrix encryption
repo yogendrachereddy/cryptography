@@ -1,0 +1,42 @@
+def generate_playfair_matrix(key):
+    key = key.replace(" ", "").upper()
+    key_matrix = ""
+    for char in key:
+        if char not in key_matrix:
+            key_matrix += char
+    alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ"  # excluding J
+    for char in alphabet:
+        if char not in key_matrix:
+            key_matrix += char
+    matrix = [key_matrix[i:i+5] for i in range(0, 25, 5)]
+    return matrix
+
+def find_char_positions(matrix, char):
+    for i in range(5):
+        for j in range(5):
+            if matrix[i][j] == char:
+                return i, j
+
+def encrypt_playfair(plain_text, key):
+    matrix = generate_playfair_matrix(key)
+    plain_text = plain_text.upper().replace(" ", "")
+    cipher_text = ""
+    for i in range(0, len(plain_text), 2):
+        char1 = plain_text[i]
+        char2 = plain_text[i + 1] if i + 1 < len(plain_text) else 'X'
+        row1, col1 = find_char_positions(matrix, char1)
+        row2, col2 = find_char_positions(matrix, char2)
+        if row1 == row2:
+            cipher_text += matrix[row1][(col1 + 1) % 5]
+            cipher_text += matrix[row2][(col2 + 1) % 5]
+        elif col1 == col2:
+            cipher_text += matrix[(row1 + 1) % 5][col1]
+            cipher_text += matrix[(row2 + 1) % 5][col2]
+        else:
+            cipher_text += matrix[row1][col2]
+            cipher_text += matrix[row2][col1]
+    return cipher_text
+key = input("Enter the key")
+plain_text = input("Enter the plain text")
+cipher_text = encrypt_playfair(plain_text, key)
+print("Cipher Text:", cipher_text)
